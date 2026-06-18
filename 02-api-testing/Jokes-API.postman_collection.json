@@ -1,0 +1,248 @@
+{
+  "info": {
+    "name": "eagerworks QA Challenge - Jokes API",
+    "_postman_id": "a1b2c3d4-0002-4a2b-9c3d-jokesapi000001",
+    "description": "Part 2 - API Testing.\n\nAPI under test: Official Joke API (https://official-joke-api.appspot.com).\n\nContents:\n- 3 automated tests on existing GET endpoints (each with multiple assertions).\n- A 'Negative' bonus test (non-existent joke -> 404).\n- A proposed 'Create Joke' (POST) request with the tests that WOULD validate it (the real API has no create endpoint; see 02-API-Testing-Answers.md).\n\nHow to run: Import this collection, optionally set the `baseUrl` collection variable, and run with the Collection Runner or `newman`.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://official-joke-api.appspot.com",
+      "type": "string"
+    },
+    {
+      "key": "knownJokeId",
+      "value": "303",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. GET random joke (schema & contract)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/random_joke",
+          "host": ["{{baseUrl}}"],
+          "path": ["random_joke"]
+        },
+        "description": "Returns a single random joke object. Validates status, content-type, schema and response time."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Content-Type is application/json', function () {",
+              "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+              "});",
+              "",
+              "const joke = pm.response.json();",
+              "",
+              "pm.test('Body is a single object (not an array)', function () {",
+              "    pm.expect(joke).to.be.an('object');",
+              "    pm.expect(joke).to.not.be.an('array');",
+              "});",
+              "",
+              "pm.test('Has all required fields with correct types', function () {",
+              "    pm.expect(joke).to.have.property('id').that.is.a('number');",
+              "    pm.expect(joke).to.have.property('type').that.is.a('string');",
+              "    pm.expect(joke).to.have.property('setup').that.is.a('string');",
+              "    pm.expect(joke).to.have.property('punchline').that.is.a('string');",
+              "});",
+              "",
+              "pm.test('setup and punchline are not empty', function () {",
+              "    pm.expect(joke.setup.trim()).to.have.length.above(0);",
+              "    pm.expect(joke.punchline.trim()).to.have.length.above(0);",
+              "});",
+              "",
+              "pm.test('type is one of the known categories', function () {",
+              "    pm.expect(['general', 'knock-knock', 'programming', 'dad']).to.include(joke.type);",
+              "});",
+              "",
+              "pm.test('Response time is below 2000ms', function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. GET ten jokes (array contract & uniqueness)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/jokes/ten",
+          "host": ["{{baseUrl}}"],
+          "path": ["jokes", "ten"]
+        },
+        "description": "Returns an array of 10 jokes. Validates the count, the schema of every element, and that all ids are unique."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const jokes = pm.response.json();",
+              "",
+              "pm.test('Body is an array of exactly 10 jokes', function () {",
+              "    pm.expect(jokes).to.be.an('array');",
+              "    pm.expect(jokes).to.have.lengthOf(10);",
+              "});",
+              "",
+              "pm.test('Every joke has the required fields and types', function () {",
+              "    jokes.forEach(function (j, i) {",
+              "        pm.expect(j, 'item ' + i).to.have.property('id').that.is.a('number');",
+              "        pm.expect(j, 'item ' + i).to.have.property('type').that.is.a('string');",
+              "        pm.expect(j, 'item ' + i).to.have.property('setup').that.is.a('string');",
+              "        pm.expect(j, 'item ' + i).to.have.property('punchline').that.is.a('string');",
+              "    });",
+              "});",
+              "",
+              "pm.test('All joke ids are unique', function () {",
+              "    const ids = jokes.map(function (j) { return j.id; });",
+              "    pm.expect(new Set(ids).size).to.eql(ids.length);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. GET joke by id (data integrity)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/jokes/{{knownJokeId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["jokes", "{{knownJokeId}}"]
+        },
+        "description": "Fetches a joke by a known id and verifies the returned object actually corresponds to the requested id."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const joke = pm.response.json();",
+              "",
+              "pm.test('Returned joke id matches the requested id', function () {",
+              "    pm.expect(String(joke.id)).to.eql(pm.collectionVariables.get('knownJokeId'));",
+              "});",
+              "",
+              "pm.test('setup and punchline are present and non-empty', function () {",
+              "    pm.expect(joke.setup).to.be.a('string').and.to.have.length.above(0);",
+              "    pm.expect(joke.punchline).to.be.a('string').and.to.have.length.above(0);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bonus - Negative: GET non-existent joke (404)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/jokes/999999",
+          "host": ["{{baseUrl}}"],
+          "path": ["jokes", "999999"]
+        },
+        "description": "Negative test: requesting a non-existent id must return 404 and a clear error body."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 404', function () {",
+              "    pm.response.to.have.status(404);",
+              "});",
+              "",
+              "pm.test('Error body explains the joke was not found', function () {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body).to.have.property('type', 'error');",
+              "    pm.expect(body.message.toLowerCase()).to.include('not found');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "PROPOSED - POST create joke",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"type\": \"programming\",\n  \"setup\": \"How many programmers does it take to change a light bulb?\",\n  \"punchline\": \"None, that's a hardware problem.\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/jokes",
+          "host": ["{{baseUrl}}"],
+          "path": ["jokes"]
+        },
+        "description": "PROPOSED endpoint (does not exist in the real API - it currently returns 404 'Cannot POST /jokes').\n\nThis request documents how a 'create joke' call would look. The test script below encodes the assertions we WOULD run against the intended 201 contract. See 02-API-Testing-Answers.md for the full design and test strategy.\n\nTo see these tests pass, point {{baseUrl}} at a Postman Mock Server configured to return 201 with the created joke."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Intended contract for the proposed POST /jokes endpoint.",
+              "// Against the real API this returns 404 (endpoint not implemented).",
+              "",
+              "pm.test('Status code is 201 Created', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test('Response echoes the created joke with a generated id', function () {",
+              "    const joke = pm.response.json();",
+              "    pm.expect(joke).to.have.property('id').that.is.a('number');",
+              "    pm.expect(joke.type).to.eql('programming');",
+              "    pm.expect(joke.setup).to.include('light bulb');",
+              "    pm.expect(joke).to.have.property('punchline').that.is.a('string');",
+              "});",
+              "",
+              "pm.test('Location header points to the new resource', function () {",
+              "    pm.expect(pm.response.headers.get('Location')).to.be.a('string');",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

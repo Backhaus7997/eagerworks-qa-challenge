@@ -1,0 +1,51 @@
+newman
+
+eagerworks QA Challenge - Jokes API
+
+→ 1. GET random joke (schema & contract)
+  GET https://official-joke-api.appspot.com/random_joke [200 OK, 506B, 294ms]
+  ✓  Status code is 200
+  ✓  Content-Type is application/json
+  ✓  Body is a single object (not an array)
+  ✓  Has all required fields with correct types
+  ✓  setup and punchline are not empty
+  ✓  type is one of the known categories
+  ✓  Response time is below 2000ms
+
+→ 2. GET ten jokes (array contract & uniqueness)
+  GET https://official-joke-api.appspot.com/jokes/ten [200 OK, 1.79kB, 239ms]
+  ✓  Status code is 200
+  ✓  Body is an array of exactly 10 jokes
+  ✓  Every joke has the required fields and types
+  ✓  All joke ids are unique
+
+→ 3. GET joke by id (data integrity)
+  GET https://official-joke-api.appspot.com/jokes/303 [200 OK, 540B, 174ms]
+  ✓  Status code is 200
+  ✓  Returned joke id matches the requested id
+  ✓  setup and punchline are present and non-empty
+
+→ Bonus - Negative: GET non-existent joke (404)
+  GET https://official-joke-api.appspot.com/jokes/999999 [404 Not Found, 464B, 200ms]
+  ✓  Status code is 404
+  ✓  Error body explains the joke was not found
+
+┌─────────────────────────┬────────────────────┬────────────────────┐
+│                         │           executed │             failed │
+├─────────────────────────┼────────────────────┼────────────────────┤
+│              iterations │                  1 │                  0 │
+├─────────────────────────┼────────────────────┼────────────────────┤
+│                requests │                  4 │                  0 │
+├─────────────────────────┼────────────────────┼────────────────────┤
+│            test-scripts │                  4 │                  0 │
+├─────────────────────────┼────────────────────┼────────────────────┤
+│      prerequest-scripts │                  0 │                  0 │
+├─────────────────────────┼────────────────────┼────────────────────┤
+│              assertions │                 16 │                  0 │
+├─────────────────────────┴────────────────────┴────────────────────┤
+│ total run duration: 983ms                                         │
+├───────────────────────────────────────────────────────────────────┤
+│ total data received: 1.64kB (approx)                              │
+├───────────────────────────────────────────────────────────────────┤
+│ average response time: 226ms [min: 174ms, max: 294ms, s.d.: 45ms] │
+└───────────────────────────────────────────────────────────────────┘
