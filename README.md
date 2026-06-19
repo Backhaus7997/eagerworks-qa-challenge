@@ -49,6 +49,6 @@ npm test
 
 ## Tools used
 
-Playwright · Postman / Newman · TypeScript · Node.js · Claude Code (AI pair-programming, see Part 3 README).
+Playwright · Postman / Newman · TypeScript · Node.js. (AI was used to speed up boilerplate/docs — see [Part 3 README](./03-automation/README.md#-use-of-ai).)
 
 > Every automated artifact was **executed and verified**, not just written.

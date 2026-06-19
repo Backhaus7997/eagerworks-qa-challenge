@@ -111,13 +111,7 @@ I prioritized the **critical happy path of the business** (the "smoke" suite you
 
 ## 🤖 Use of AI
 
-I used **Claude (Anthropic) via Claude Code** as a pair-programming assistant for this challenge. How and why:
-
-- **Exploration:** drove a browser (Playwright) to explore SauceDemo and the Joke API, capturing real evidence (DOM values, console logs, screenshots) rather than relying on assumptions.
-- **Scaffolding:** generated the POM structure, the Playwright config and the first draft of the specs, which I reviewed and adjusted.
-- **Why:** to move faster on boilerplate and documentation while keeping my focus on the **QA decisions** that matter — which cases to automate first, which validations add value, and how to report defects clearly.
-
-Everything was **verified by actually running it**: the Playwright suite (8/8 passing) and the Postman/Newman tests (16/16 passing) were executed locally, not just written.
+I designed the test strategy myself — which cases to automate, what to validate, and how to report the bugs. I used an AI assistant only to speed up the mechanical parts (Page Object boilerplate, config, and tidying docs). Every test was then verified by actually running it: Playwright 8/8 and Postman/Newman 16/16 passing.
 
 ---
 
